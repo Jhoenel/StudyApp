@@ -1224,6 +1224,38 @@
                 flex: 1 1 auto;
                 min-width: 100px;
             }
+
+
+            @media(max-width:820px) {
+                .app {
+                    flex-direction: column
+                }
+
+                /* … other mobile rules … */
+
+                #sDayWrap,
+                #sDateWrap {
+                    flex: 1 1 auto;
+                    min-width: 100px;
+                }
+            }
+
+            /* =========================================================
+            HIDDEN SCROLLBARS — scrolling still works, bars are gone
+            ========================================================= */
+            * {
+                scrollbar-width: none;
+                /* Firefox */
+                -ms-overflow-style: none;
+                /* legacy Edge / IE */
+            }
+
+            *::-webkit-scrollbar {
+                width: 0;
+                height: 0;
+                display: none;
+                /* Chrome, Safari, Edge */
+            }
         }
     </style>
 </head>
