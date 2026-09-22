@@ -1,0 +1,2957 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>StudyDesk — Student Toolkit</title>
+    <script>
+        /* Apply saved theme before first paint to avoid a flash */
+        (function () {
+            try {
+                var t = localStorage.getItem('studydesk.theme');
+                if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) { }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #f4f5fb;
+            --panel: #ffffff;
+            --panel-2: #fbfbfe;
+            --soft: #f1f2f9;
+            --soft-2: #e8eaf6;
+            --ink: #171a2b;
+            --muted: #6b7280;
+            --line: #e8e9f2;
+            --line-soft: #f3f4fa;
+            --brand: #5b5bd6;
+            --brand-2: #8b5cf6;
+            --brand-soft: #eef0ff;
+            --brand-line: #dcdcfa;
+            --dash: #cfd2e8;
+            --check-border: #d5d8e8;
+            --ring-bg: #eef0f8;
+            --ok-bg: #e7f8f1;
+            --ok-ink: #0d8f63;
+            --warn-bg: #fef4e3;
+            --warn-ink: #b26b06;
+            --danger: #ef4444;
+            --danger-bg: #fdecec;
+            --danger-bg-2: #fbdede;
+            --danger-ink: #c53434;
+            --toast-bg: #1f2138;
+            --toast-ink: #ffffff;
+            --radius: 16px;
+            --shadow: 0 1px 2px rgba(20, 20, 50, .05), 0 8px 24px rgba(20, 20, 60, .06);
+        }
+
+        html[data-theme="dark"] {
+            --bg: #000000;
+            --panel: #0a0a0c;
+            --panel-2: #101013;
+            --soft: #16161a;
+            --soft-2: #1f1f26;
+            --ink: #f2f2f7;
+            --muted: #8a8a96;
+            --line: #1d1d24;
+            --line-soft: #141419;
+            --brand: #8b8bf5;
+            --brand-2: #a78bfa;
+            --brand-soft: #17172c;
+            --brand-line: #2c2c4d;
+            --dash: #2a2a33;
+            --check-border: #2e2e38;
+            --ring-bg: #1c1c24;
+            --ok-bg: rgba(16, 185, 129, .14);
+            --ok-ink: #34d399;
+            --warn-bg: rgba(245, 158, 11, .14);
+            --warn-ink: #fbbf24;
+            --danger: #f87171;
+            --danger-bg: rgba(239, 68, 68, .14);
+            --danger-bg-2: rgba(239, 68, 68, .22);
+            --danger-ink: #f87171;
+            --toast-bg: #e8e8ee;
+            --toast-ink: #0a0a0c;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .8), 0 8px 28px rgba(0, 0, 0, .6);
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            transition: background-color .25s ease, color .25s ease;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+            font-size: inherit;
+            color: inherit
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            font-weight: 650;
+            letter-spacing: -.02em
+        }
+
+        h2 {
+            font-size: 16px
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .small {
+            font-size: 12px
+        }
+
+        .link {
+            color: var(--brand);
+            text-decoration: underline;
+            cursor: pointer
+        }
+
+        /* ---------- layout ---------- */
+        .app {
+            display: flex;
+            min-height: 100vh
+        }
+
+        .sidebar {
+            width: 236px;
+            flex: 0 0 236px;
+            background: var(--panel);
+            border-right: 1px solid var(--line);
+            padding: 22px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            transition: background-color .25s ease, border-color .25s ease;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 750;
+            font-size: 17px;
+            padding: 0 10px 20px;
+            letter-spacing: -.03em
+        }
+
+        .brand .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            color: #fff;
+            font-size: 16px;
+            box-shadow: 0 6px 14px rgba(91, 91, 214, .35);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            width: 100%;
+            padding: 10px 12px;
+            border: 0;
+            background: transparent;
+            border-radius: 11px;
+            cursor: pointer;
+            font-weight: 520;
+            color: var(--muted);
+            text-align: left;
+            transition: .15s;
+        }
+
+        .nav-item span.ico {
+            font-size: 16px;
+            width: 20px;
+            text-align: center
+        }
+
+        .nav-item:hover {
+            background: var(--soft);
+            color: var(--ink)
+        }
+
+        .nav-item.active {
+            background: var(--brand-soft);
+            color: var(--brand);
+            font-weight: 620
+        }
+
+        .side-foot {
+            margin-top: auto;
+            padding: 12px 12px 4px;
+            font-size: 11.5px;
+            color: var(--muted);
+            opacity: .7;
+            line-height: 1.5
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column
+        }
+
+        .topbar {
+            padding: 24px 32px 6px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .topbar h1 {
+            font-size: 26px;
+            letter-spacing: -.035em
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 2px
+        }
+
+        .topbar .date {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .theme-toggle {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            display: grid;
+            place-items: center;
+            transition: .18s;
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            background: var(--soft);
+            transform: translateY(-1px)
+        }
+
+        .views {
+            padding: 18px 32px 56px;
+            max-width: 1180px;
+            width: 100%
+        }
+
+        .view {
+            display: none;
+            animation: fade .28s ease
+        }
+
+        .view.active {
+            display: block
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        /* ---------- primitives ---------- */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+            transition: background-color .25s ease, border-color .25s ease;
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 14px
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+            flex: 1 1 150px
+        }
+
+        .field label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: .01em
+        }
+
+        input,
+        select,
+        textarea {
+            border: 1px solid var(--line);
+            background: var(--panel-2);
+            border-radius: 10px;
+            padding: 10px 12px;
+            outline: none;
+            transition: .15s;
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--brand);
+            background: var(--panel);
+            box-shadow: 0 0 0 3px var(--brand-soft)
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+            line-height: 1.55
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .15s;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(91, 91, 214, .28)
+        }
+
+        .btn.primary:hover {
+            filter: brightness(1.07);
+            transform: translateY(-1px)
+        }
+
+        .btn.ghost {
+            background: var(--soft);
+            color: var(--ink)
+        }
+
+        .btn.ghost:hover {
+            background: var(--soft-2)
+        }
+
+        .btn.danger {
+            background: var(--danger-bg);
+            color: var(--danger-ink)
+        }
+
+        .btn.danger:hover {
+            background: var(--danger-bg-2)
+        }
+
+        .btn.tiny {
+            padding: 6px 11px;
+            font-size: 12.5px;
+            border-radius: 8px
+        }
+
+        .icon-btn {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 13px;
+            padding: 4px 6px;
+            border-radius: 7px;
+            line-height: 1;
+            transition: .15s;
+        }
+
+        .icon-btn:hover {
+            background: var(--soft);
+            color: var(--danger)
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11.5px;
+            font-weight: 650;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: var(--soft);
+            color: var(--muted);
+        }
+
+        .pill.ok {
+            background: var(--ok-bg);
+            color: var(--ok-ink)
+        }
+
+        .pill.warn {
+            background: var(--warn-bg);
+            color: var(--warn-ink)
+        }
+
+        .pill.danger {
+            background: var(--danger-bg);
+            color: var(--danger-ink)
+        }
+
+        .pill.brand {
+            background: var(--brand-soft);
+            color: var(--brand)
+        }
+
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13.5px;
+            padding: 26px 10px;
+            border: 1.5px dashed var(--dash);
+            border-radius: 12px;
+            opacity: .85;
+        }
+
+        /* ---------- dashboard ---------- */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px
+        }
+
+        .stat {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            transition: background-color .25s ease, border-color .25s ease;
+        }
+
+        .stat .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            display: flex;
+            gap: 7px;
+            align-items: center
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 27px;
+            letter-spacing: -.04em;
+            margin-top: 8px
+        }
+
+        .stat .sub {
+            font-size: 11.5px;
+            color: var(--muted);
+            opacity: .75;
+            margin-top: 2px
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px
+        }
+
+        @media(max-width:900px) {
+            .grid-2 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .list-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 4px;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .list-row:last-child {
+            border-bottom: 0
+        }
+
+        .list-row .lr-main {
+            flex: 1;
+            min-width: 0
+        }
+
+        .list-row .lr-title {
+            font-weight: 580;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .list-row .lr-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex: 0 0 8px
+        }
+
+        /* ---------- checkboxes ---------- */
+        .check {
+            width: 20px;
+            height: 20px;
+            border-radius: 7px;
+            border: 2px solid var(--check-border);
+            flex: 0 0 20px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: .15s;
+            background: var(--panel);
+        }
+
+        .check:hover {
+            border-color: var(--brand)
+        }
+
+        .check.on {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+            font-size: 12px
+        }
+
+        .check.on::after {
+            content: '✓'
+        }
+
+        .done-text {
+            text-decoration: line-through;
+            color: var(--muted);
+            opacity: .7
+        }
+
+        /* ---------- schedule ---------- */
+        .sched-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(130px, 1fr));
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 6px
+        }
+
+        .day-col {
+            min-width: 130px
+        }
+
+        .day-head {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 6px 4px 10px;
+            border-bottom: 2px solid var(--line);
+            margin-bottom: 8px;
+        }
+
+        .class-block {
+            position: relative;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--c, var(--brand));
+            border-radius: 10px;
+            padding: 9px 10px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+        }
+
+        .cb-time {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--c, var(--brand));
+            letter-spacing: .02em
+        }
+
+        .cb-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 3px;
+            line-height: 1.3
+        }
+
+        .cb-room {
+            font-size: 11.5px;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        .class-block .icon-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px
+        }
+
+        .empty-mini {
+            font-size: 12px;
+            color: var(--muted);
+            opacity: .5;
+            text-align: center;
+            padding: 10px 0
+        }
+
+        /* toggle switch inside form for repeat */
+        .repeat-toggle {
+            display: flex;
+            gap: 6px;
+            background: var(--soft);
+            padding: 4px;
+            border-radius: 10px
+        }
+
+        .repeat-toggle button {
+            flex: 1;
+            border: 0;
+            background: transparent;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12.5px;
+            color: var(--muted);
+            transition: .15s;
+            white-space: nowrap;
+        }
+
+        .repeat-toggle button.active {
+            background: var(--panel);
+            color: var(--brand);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .12)
+        }
+
+        /* ---------- reviewers ---------- */
+        .split {
+            display: grid;
+            grid-template-columns: 270px 1fr;
+            gap: 18px
+        }
+
+        @media(max-width:820px) {
+            .split {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .note-item {
+            padding: 11px 12px;
+            border-radius: 11px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: .15s;
+        }
+
+        .note-item:hover {
+            background: var(--soft)
+        }
+
+        .note-item.active {
+            background: var(--brand-soft);
+            border-color: var(--brand-line)
+        }
+
+        .note-item .nt {
+            font-weight: 600;
+            font-size: 13.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .note-item .ns {
+            font-size: 11.5px;
+            color: var(--muted);
+            margin-top: 3px
+        }
+
+        .note-list {
+            max-height: 520px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2px
+        }
+
+        /* ---------- timer ---------- */
+        .timer-wrap {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 18px
+        }
+
+        @media(max-width:900px) {
+            .timer-wrap {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .timer-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px
+        }
+
+        .ring-box {
+            position: relative;
+            width: 270px;
+            height: 270px
+        }
+
+        .ring {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg)
+        }
+
+        .ring circle {
+            fill: none;
+            stroke-width: 14;
+            stroke-linecap: round
+        }
+
+        .ring .bg {
+            stroke: var(--ring-bg)
+        }
+
+        .ring .fg {
+            stroke: url(#grad);
+            transition: stroke-dashoffset .3s linear
+        }
+
+        .ring-time {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .ring-time .t {
+            font-size: 50px;
+            font-weight: 700;
+            letter-spacing: -.05em;
+            font-variant-numeric: tabular-nums
+        }
+
+        .ring-time .m {
+            font-size: 12.5px;
+            font-weight: 650;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted)
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 6px;
+            background: var(--soft);
+            padding: 5px;
+            border-radius: 12px
+        }
+
+        .mode-tabs button {
+            border: 0;
+            background: transparent;
+            padding: 8px 15px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--muted);
+            transition: .15s;
+        }
+
+        .mode-tabs button.active {
+            background: var(--panel);
+            color: var(--brand);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .15)
+        }
+
+        .session-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 9px 2px;
+            border-bottom: 1px solid var(--line-soft)
+        }
+
+        .session-row:last-child {
+            border-bottom: 0
+        }
+
+        /* ---------- flashcards ---------- */
+        .dropzone {
+            border: 2px dashed var(--dash);
+            border-radius: 14px;
+            padding: 30px 20px;
+            text-align: center;
+            background: var(--panel-2);
+            cursor: pointer;
+            transition: .18s;
+            margin-bottom: 16px;
+        }
+
+        .dropzone:hover,
+        .dropzone.over {
+            border-color: var(--brand);
+            background: var(--brand-soft)
+        }
+
+        .dz-icon {
+            font-size: 30px;
+            margin-bottom: 8px
+        }
+
+        .status {
+            margin-top: 14px;
+            font-size: 13.5px;
+            padding: 11px 14px;
+            border-radius: 11px;
+            display: none;
+            line-height: 1.5
+        }
+
+        .status.show {
+            display: block
+        }
+
+        .status.ok {
+            background: var(--ok-bg);
+            color: var(--ok-ink)
+        }
+
+        .status.err {
+            background: var(--danger-bg);
+            color: var(--danger-ink)
+        }
+
+        .status.info {
+            background: var(--brand-soft);
+            color: var(--brand)
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+            max-height: 460px;
+            overflow: auto;
+            padding-right: 4px
+        }
+
+        .mini-card {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 13px 14px;
+            background: var(--panel-2);
+            position: relative;
+        }
+
+        .mini-card .q {
+            font-size: 13px;
+            font-weight: 620;
+            line-height: 1.4
+        }
+
+        .mini-card .a {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-top: 7px;
+            line-height: 1.45;
+            padding-top: 7px;
+            border-top: 1px dashed var(--line)
+        }
+
+        .mini-card .icon-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px
+        }
+
+        /* ---------- study overlay ---------- */
+        .study-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(160deg, #000000, #0d0b1f 55%, #161232);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 26px;
+            z-index: 200;
+            padding: 24px;
+        }
+
+        .study-overlay.show {
+            display: flex;
+            animation: fade .25s
+        }
+
+        .study-top {
+            position: absolute;
+            top: 22px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 28px;
+            color: #c9c8ee;
+            font-size: 13.5px;
+            font-weight: 600
+        }
+
+        .study-top button {
+            background: rgba(255, 255, 255, .12);
+            border: 0;
+            color: #fff;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px
+        }
+
+        .study-top button:hover {
+            background: rgba(255, 255, 255, .22)
+        }
+
+        .flashcard {
+            width: min(660px, 92vw);
+            height: min(360px, 52vh);
+            perspective: 1500px;
+            cursor: pointer
+        }
+
+        .fc-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform .55s cubic-bezier(.4, .2, .2, 1)
+        }
+
+        .flashcard.flipped .fc-inner {
+            transform: rotateY(180deg)
+        }
+
+        .fc-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 38px;
+            text-align: center;
+            background: #fff;
+            color: #14142b;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .55);
+            gap: 14px;
+        }
+
+        .fc-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #5b5bd6, #8b5cf6);
+            color: #fff
+        }
+
+        .fc-label {
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: #a9aec9
+        }
+
+        .fc-back .fc-label {
+            color: rgba(255, 255, 255, .7)
+        }
+
+        .fc-text {
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.45;
+            letter-spacing: -.01em;
+            overflow: auto;
+            max-height: 100%
+        }
+
+        .fc-back .fc-text {
+            font-weight: 500;
+            font-size: 20px
+        }
+
+        .fc-hint {
+            font-size: 12px;
+            color: #b6bad0;
+            position: absolute;
+            bottom: 22px
+        }
+
+        .study-actions {
+            display: flex;
+            gap: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .2s
+        }
+
+        .study-actions.show {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        .study-actions .btn {
+            padding: 13px 30px;
+            border-radius: 12px;
+            font-size: 14.5px
+        }
+
+        .study-actions .ghost {
+            background: rgba(255, 255, 255, .13);
+            color: #fff
+        }
+
+        .study-actions .ghost:hover {
+            background: rgba(255, 255, 255, .24)
+        }
+
+        .study-done {
+            color: #fff;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            align-items: center
+        }
+
+        .study-done h2 {
+            font-size: 30px;
+            letter-spacing: -.03em
+        }
+
+        .study-done p {
+            color: #c9c8ee;
+            margin: 0;
+            font-size: 14.5px
+        }
+
+        /* ---------- toast ---------- */
+        #toast {
+            position: fixed;
+            bottom: 26px;
+            left: 50%;
+            transform: translate(-50%, 20px);
+            background: var(--toast-bg);
+            color: var(--toast-ink);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 550;
+            opacity: 0;
+            pointer-events: none;
+            transition: .25s;
+            z-index: 400;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0)
+        }
+
+        /* --- FIX: keep the schedule form row perfectly stable when switching repeat mode --- */
+        /* Day and Date wrappers get the SAME fixed width so the row never reflows */
+        #sDayWrap,
+        #sDateWrap {
+            flex: 1 1 140px;
+            min-width: 120px;
+        }
+
+        /* Both controls get an identical height so nothing nudges vertically */
+        #sDayWrap select,
+        #sDateWrap input {
+            min-height: 42px;
+        }
+
+        /* Reserve two lines for the hint text so the card height never jumps */
+        #repeatHint {
+            min-height: 3em;
+        }
+
+        @media(max-width:820px) {
+            .app {
+                flex-direction: column
+            }
+
+            .sidebar {
+                width: 100%;
+                flex: none;
+                height: auto;
+                position: static;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+                gap: 6px;
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+                align-items: center;
+            }
+
+            .brand {
+                padding: 0 12px 0 4px;
+                font-size: 15px;
+                white-space: nowrap
+            }
+
+            .brand .logo {
+                width: 28px;
+                height: 28px;
+                font-size: 14px
+            }
+
+            .nav-item {
+                width: auto;
+                white-space: nowrap;
+                padding: 8px 12px;
+                font-size: 13.5px
+            }
+
+            .nav-item span.ico {
+                display: none
+            }
+
+            .side-foot {
+                display: none
+            }
+
+            .topbar {
+                padding: 18px 18px 4px
+            }
+
+            .topbar h1 {
+                font-size: 21px
+            }
+
+            .views {
+                padding: 14px 18px 48px
+            }
+
+            .card {
+                padding: 16px
+            }
+
+            #sDayWrap,
+            #sDateWrap {
+                flex: 1 1 auto;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo">📚</div> StudyDesk
+            </div>
+            <button class="nav-item active" data-view="dashboard"><span class="ico">🏠</span> Dashboard</button>
+            <button class="nav-item" data-view="assignments"><span class="ico">📝</span> Assignments</button>
+            <button class="nav-item" data-view="schedule"><span class="ico">📅</span> Schedule</button>
+            <button class="nav-item" data-view="reviewers"><span class="ico">📖</span> Reviewers</button>
+            <button class="nav-item" data-view="timer"><span class="ico">⏱️</span> Study Timer</button>
+            <button class="nav-item" data-view="cards"><span class="ico">🧠</span> Flashcards</button>
+            <div class="side-foot">Your data is saved locally in this browser.<br>Made for students 💜</div>
+        </aside>
+
+        <!-- ============ MAIN ============ -->
+        <main class="main">
+            <header class="topbar">
+                <h1 id="viewTitle">Dashboard</h1>
+                <div class="topbar-right">
+                    <div class="date" id="todayLabel"></div>
+                    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode"
+                        aria-label="Toggle dark mode">🌙</button>
+                </div>
+            </header>
+
+            <div class="views">
+
+                <!-- ---------- DASHBOARD ---------- -->
+                <section class="view active" id="view-dashboard">
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-label">📌 Due this week</div>
+                            <strong id="statDue">0</strong>
+                            <div class="sub" id="statDueSub">nothing pending</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">📅 Classes today</div>
+                            <strong id="statClasses">0</strong>
+                            <div class="sub" id="statClassesSub">free day</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">🧠 Flashcards</div>
+                            <strong id="statCards">0</strong>
+                            <div class="sub" id="statCardsSub">0 mastered</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">⏱️ Focus today</div>
+                            <strong id="statFocus">0m</strong>
+                            <div class="sub" id="statFocusSub">no sessions yet</div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-head">
+                                <h2>Today's classes</h2>
+                                <button class="btn ghost tiny" data-goto="schedule">Open schedule</button>
+                            </div>
+                            <div id="dashSchedule"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-head">
+                                <h2>Upcoming deadlines</h2>
+                                <button class="btn ghost tiny" data-goto="assignments">All assignments</button>
+                            </div>
+                            <div id="dashAssignments"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ---------- ASSIGNMENTS ---------- -->
+                <section class="view" id="view-assignments">
+                    <div class="card">
+                        <h2 style="margin-bottom:14px">Add an assignment</h2>
+                        <div class="row">
+                            <div class="field" style="flex:2 1 220px"><label>Title</label><input id="aTitle"
+                                    placeholder="e.g. Physics Lab Report"></div>
+                            <div class="field"><label>Subject</label><input id="aSubject" placeholder="Physics"></div>
+                            <div class="field"><label>Due date</label><input type="date" id="aDue"></div>
+                            <div class="field" style="flex:0 1 130px"><label>Priority</label>
+                                <select id="aPriority">
+                                    <option value="low">Low</option>
+                                    <option value="med" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <button class="btn primary" id="btnAddAssignment">+ Add</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <h2>Your assignments</h2>
+                            <div class="mode-tabs" id="assignFilters">
+                                <button data-f="pending" class="active">Pending</button>
+                                <button data-f="all">All</button>
+                                <button data-f="done">Done</button>
+                            </div>
+                        </div>
+                        <div id="assignList"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- SCHEDULE ---------- -->
+                <section class="view" id="view-schedule">
+                    <div class="card">
+                        <h2 style="margin-bottom:14px">Add a class or event</h2>
+                        <div class="row">
+                            <div class="field" style="flex:2 1 200px"><label>Class name</label><input id="sTitle"
+                                    placeholder="e.g. Calculus II"></div>
+
+                            <div class="field" style="flex:0 1 200px">
+                                <label>Repeat</label>
+                                <div class="repeat-toggle" id="repeatToggle">
+                                    <button type="button" data-repeat="weekly" class="active">Every week</button>
+                                    <button type="button" data-repeat="once">One-time</button>
+                                </div>
+                                <input type="hidden" id="sRepeat" value="weekly">
+                            </div>
+
+                            <!-- FIX: both wrappers share the exact same fixed width (165px, set in CSS) -->
+                            <div class="field" id="sDayWrap"><label>Day</label>
+                                <select id="sDay">
+                                    <option>Mon</option>
+                                    <option>Tue</option>
+                                    <option>Wed</option>
+                                    <option>Thu</option>
+                                    <option>Fri</option>
+                                    <option>Sat</option>
+                                    <option>Sun</option>
+                                </select>
+                            </div>
+
+                            <div class="field" id="sDateWrap" style="display:none"><label>Date</label>
+                                <input type="date" id="sDate">
+                            </div>
+
+                            <div class="field" style="flex:0 1 120px"><label>Start</label><input type="time" id="sStart"
+                                    value="08:00"></div>
+                            <div class="field" style="flex:0 1 120px"><label>End</label><input type="time" id="sEnd"
+                                    value="09:30"></div>
+                            <div class="field" style="flex:0 1 140px"><label>Room</label><input id="sRoom"
+                                    placeholder="Rm 204"></div>
+                            <div class="field" style="flex:0 1 90px"><label>Color</label>
+                                <input type="color" id="sColor" value="#5b5bd6"
+                                    style="padding:4px;height:42px;cursor:pointer">
+                            </div>
+                            <button class="btn primary" id="btnAddClass">+ Add</button>
+                        </div>
+                        <div class="muted small" id="repeatHint" style="margin-top:10px">
+                            Weekly classes appear in your timetable every week. One-time events appear once, on a
+                            specific date.
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <h2>Weekly timetable</h2><span class="muted small" id="schedCount"></span>
+                        </div>
+                        <div class="sched-grid" id="schedGrid"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <h2>Upcoming one-time events</h2>
+                            <span class="muted small" id="oneTimeCount"></span>
+                        </div>
+                        <div id="oneTimeList"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- REVIEWERS ---------- -->
+                <section class="view" id="view-reviewers">
+                    <div class="split">
+                        <div class="card" style="padding:14px">
+                            <div class="card-head" style="margin-bottom:10px">
+                                <h2>Reviewers</h2>
+                                <button class="btn primary tiny" id="btnNewNote">+ New</button>
+                            </div>
+                            <div class="note-list" id="noteList"></div>
+                        </div>
+
+                        <div class="card">
+                            <div id="noteEditorWrap">
+                                <div class="row" style="margin-bottom:12px">
+                                    <div class="field" style="flex:2 1 220px"><label>Title</label><input id="noteTitle"
+                                            placeholder="Untitled reviewer"></div>
+                                    <button class="btn primary" id="btnSaveNote">Save</button>
+                                    <button class="btn ghost" id="btnNoteToCards">🧠 Make flashcards</button>
+                                    <button class="btn danger" id="btnDeleteNote">Delete</button>
+                                </div>
+                                <div class="field">
+                                    <label>Content</label>
+                                    <textarea id="noteContent" style="min-height:400px"
+                                        placeholder="Type or paste your review notes here…
+
+Tip: lines like &quot;Mitosis: cell division producing two identical cells&quot; or &quot;Q: What is osmosis? / A: …&quot; become great flashcards automatically."></textarea>
+                                </div>
+                                <div class="muted small" id="noteMeta" style="margin-top:10px"></div>
+                            </div>
+                            <div class="empty" id="noteEmpty">Select a reviewer or create a new one.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ---------- TIMER ---------- -->
+                <section class="view" id="view-timer">
+                    <div class="timer-wrap">
+                        <div class="card timer-stage">
+                            <div class="mode-tabs" id="timerModes">
+                                <button data-mode="focus" class="active">Focus</button>
+                                <button data-mode="short">Short break</button>
+                                <button data-mode="long">Long break</button>
+                            </div>
+
+                            <div class="ring-box">
+                                <svg class="ring" viewBox="0 0 240 240">
+                                    <defs>
+                                        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#5b5bd6" />
+                                            <stop offset="100%" stop-color="#8b5cf6" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="bg" cx="120" cy="120" r="104"></circle>
+                                    <circle class="fg" id="ringFg" cx="120" cy="120" r="104"></circle>
+                                </svg>
+                                <div class="ring-time">
+                                    <div class="t" id="timerDisplay">25:00</div>
+                                    <div class="m" id="timerModeLabel">Focus</div>
+                                </div>
+                            </div>
+
+                            <div class="row" style="justify-content:center">
+                                <button class="btn primary" id="btnTimerStart" style="min-width:120px">Start</button>
+                                <button class="btn ghost" id="btnTimerReset">Reset</button>
+                                <button class="btn ghost" id="btnTimerSkip">Skip</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="card">
+                                <h2 style="margin-bottom:12px">Settings</h2>
+                                <div class="row">
+                                    <div class="field"><label>Focus (min)</label><input type="number" id="setFocus"
+                                            min="1" max="180" value="25"></div>
+                                    <div class="field"><label>Short break</label><input type="number" id="setShort"
+                                            min="1" max="60" value="5"></div>
+                                    <div class="field"><label>Long break</label><input type="number" id="setLong"
+                                            min="1" max="90" value="15"></div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-head" style="margin-bottom:8px">
+                                    <h2>Today's sessions</h2>
+                                    <span class="pill brand" id="sessionTotal">0 min</span>
+                                </div>
+                                <div id="sessionList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ---------- FLASHCARDS ---------- -->
+                <section class="view" id="view-cards">
+                    <div class="card">
+                        <h2 style="margin-bottom:6px">Generate flashcards automatically</h2>
+                        <p class="muted small" style="margin:0 0 16px">
+                            Upload any file — PDF, Word, PowerPoint, Excel, text, Markdown, CSV, HTML, or even a
+                            photo/screenshot.
+                            Scanned and image-only PDFs are handled with automatic OCR.
+                        </p>
+
+                        <div class="dropzone" id="dropzone">
+                            <div class="dz-icon">📄</div>
+                            <div><strong>Drop a file here</strong> or <span class="link">browse your device</span></div>
+                            <div class="muted small" style="margin-top:6px">
+                                PDF · DOCX · PPTX · XLSX · TXT · MD · CSV · HTML · RTF · JSON · PNG · JPG · WEBP
+                            </div>
+                            <div class="muted small" style="margin-top:2px;opacity:.8">
+                                Scanned PDFs and photos are read with OCR automatically.
+                            </div>
+                            <input type="file" id="fileInput" hidden
+                                accept=".pdf,.docx,.pptx,.xlsx,.txt,.md,.markdown,.csv,.json,.html,.htm,.xml,.rtf,.log,.tex,.png,.jpg,.jpeg,.webp,.bmp,.gif,.tif,.tiff">
+                        </div>
+
+                        <div class="row" style="margin-bottom:12px">
+                            <div class="field" style="flex:0 1 190px">
+                                <label>How many flashcards?</label>
+                                <input type="number" id="cardCount" value="20" min="1" max="300">
+                            </div>
+                            <div class="field" style="flex:1 1 200px">
+                                <label>Deck name (optional)</label>
+                                <input id="deckName" placeholder="e.g. Biology — Chapter 3">
+                            </div>
+                        </div>
+
+                        <div class="field" style="margin-bottom:12px">
+                            <label>…or paste text directly</label>
+                            <textarea id="pasteArea"
+                                placeholder="Paste your notes, an article, a reviewer — anything."></textarea>
+                        </div>
+
+                        <button class="btn primary" id="btnGenerateText">✨ Generate flashcards from pasted text</button>
+                        <div class="status" id="genStatus"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-head">
+                            <h2>Your decks</h2>
+                            <div class="row">
+                                <select id="deckSelect" style="min-width:190px"></select>
+                                <button class="btn primary" id="btnStudy">▶ Study</button>
+                                <button class="btn danger tiny" id="btnClearDeck">Clear deck</button>
+                            </div>
+                        </div>
+                        <div class="muted small" id="deckStats" style="margin-bottom:12px"></div>
+                        <div class="card-grid" id="cardPreview"></div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ============ STUDY OVERLAY ============ -->
+    <div class="study-overlay" id="studyOverlay">
+        <div class="study-top">
+            <button id="studyClose">✕</button>
+            <span id="studyProgress">0 / 0</span>
+        </div>
+        <div class="flashcard" id="flashcard">
+            <div class="fc-inner">
+                <div class="fc-face fc-front">
+                    <div class="fc-label">Question</div>
+                    <div class="fc-text" id="fcFront"></div>
+                    <div class="fc-hint">Click the card to reveal the answer</div>
+                </div>
+                <div class="fc-face fc-back">
+                    <div class="fc-label">Answer</div>
+                    <div class="fc-text" id="fcBack"></div>
+                </div>
+            </div>
+        </div>
+        <div class="study-actions" id="studyActions">
+            <button class="btn ghost" id="btnAgain">↻ Again</button>
+            <button class="btn primary" id="btnGood">✓ Got it</button>
+        </div>
+        <div class="study-done" id="studyDone" style="display:none">
+            <h2>Session complete 🎉</h2>
+            <p id="studySummary"></p>
+            <button class="btn primary" id="btnStudyRestart">Study again</button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <!-- ============ LIBRARIES ============ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        /* =========================================================
+        HELPERS
+        ========================================================= */
+        const $ = s => document.querySelector(s);
+        const $$ = s => [...document.querySelectorAll(s)];
+        const uid = () => Math.random().toString(36).slice(2, 10);
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function toast(msg) {
+            const t = $('#toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.classList.remove('show'), 2600);
+        }
+
+        const DAY_KEYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const DAY_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+        function todayKey() { return DAY_KEYS[new Date().getDay()]; }
+        function todayISO() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function dayDiff(dateStr) {
+            if (!dateStr) return null;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const d = new Date(dateStr + 'T00:00:00');
+            return Math.round((d - today) / 86400000);
+        }
+
+        function dueLabel(dateStr) {
+            const d = dayDiff(dateStr);
+            if (d === null) return { text: 'No date', cls: '' };
+            if (d < 0) return { text: `${Math.abs(d)}d overdue`, cls: 'danger' };
+            if (d === 0) return { text: 'Due today', cls: 'warn' };
+            if (d === 1) return { text: 'Due tomorrow', cls: 'warn' };
+            if (d <= 7) return { text: `Due in ${d}d`, cls: 'brand' };
+            return { text: new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), cls: '' };
+        }
+
+        function beep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                [880, 1180].forEach((f, i) => {
+                    const o = ctx.createOscillator(), g = ctx.createGain();
+                    o.connect(g); g.connect(ctx.destination);
+                    o.type = 'sine'; o.frequency.value = f;
+                    const t0 = ctx.currentTime + i * 0.28;
+                    g.gain.setValueAtTime(0.0001, t0);
+                    g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.03);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.26);
+                    o.start(t0); o.stop(t0 + 0.3);
+                });
+            } catch (e) { /* audio unavailable */ }
+        }
+
+        /* =========================================================
+        THEME
+        ========================================================= */
+        const THEME_KEY = 'studydesk.theme';
+        function applyTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            const btn = $('#themeToggle');
+            if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+            try { localStorage.setItem(THEME_KEY, t); } catch (e) { }
+        }
+        (function initTheme() {
+            let t = 'light';
+            try {
+                t = localStorage.getItem(THEME_KEY)
+                    || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
+            } catch (e) { }
+            applyTheme(t);
+        })();
+        document.addEventListener('DOMContentLoaded', () => {
+            $('#themeToggle').addEventListener('click', () => {
+                const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                applyTheme(cur);
+            });
+        });
+
+        /* =========================================================
+        STATE
+        ========================================================= */
+        const STORAGE_KEY = 'studydesk.v1';
+
+        const defaultState = () => ({
+            assignments: [
+                { id: uid(), title: 'Physics Lab Report', subject: 'Physics', due: isoIn(2), priority: 'high', done: false },
+                { id: uid(), title: 'Read Chapter 7 — Cell Division', subject: 'Biology', due: isoIn(4), priority: 'med', done: false },
+                { id: uid(), title: 'Math Problem Set 5', subject: 'Calculus', due: isoIn(1), priority: 'high', done: false }
+            ],
+            schedule: [
+                { id: uid(), title: 'Calculus II', day: 'Mon', start: '08:00', end: '09:30', room: 'Rm 204', color: '#5b5bd6', repeat: 'weekly' },
+                { id: uid(), title: 'Biology Lecture', day: 'Mon', start: '10:00', end: '11:30', room: 'Lab 3', color: '#10b981', repeat: 'weekly' },
+                { id: uid(), title: 'World History', day: 'Wed', start: '13:00', end: '14:30', room: 'Rm 118', color: '#f59e0b', repeat: 'weekly' },
+                { id: uid(), title: 'Study Group', day: 'Fri', start: '15:00', end: '16:30', room: 'Library', color: '#8b5cf6', repeat: 'weekly' },
+                { id: uid(), title: 'Thesis Defense Rehearsal', date: isoIn(3), start: '14:00', end: '15:30', room: 'Auditorium', color: '#ef4444', repeat: 'once' }
+            ],
+            notes: [
+                {
+                    id: uid(), title: 'Sample Reviewer — Cell Biology', content:
+                        `Mitosis: cell division that produces two genetically identical daughter cells.
+Meiosis: cell division that produces four gametes with half the chromosome number.
+Ribosome: the organelle responsible for protein synthesis.
+Mitochondria: the organelle that generates most of the cell's ATP energy.
+Osmosis: the movement of water across a semi-permeable membrane.
+Diffusion: the movement of particles from high to low concentration.
+Q: What is the cell cycle?
+A: The series of stages a cell goes through to divide and produce new cells.`,
+                    updated: Date.now()
+                }
+            ],
+            cards: [],
+            sessions: [],
+            settings: { focus: 25, short: 5, long: 15 }
+        });
+
+        function isoIn(days) {
+            const d = new Date(); d.setDate(d.getDate() + days);
+            return d.toISOString().slice(0, 10);
+        }
+
+        let state;
+        try {
+            state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState();
+        } catch (e) { state = defaultState(); }
+        state = Object.assign(defaultState(), state);
+        state.settings = Object.assign({ focus: 25, short: 5, long: 15 }, state.settings || {});
+
+        // Backfill `repeat` for older saved entries
+        state.schedule = (state.schedule || []).map(s => ({
+            ...s,
+            repeat: s.repeat || 'weekly'
+        }));
+
+        function save() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+            catch (e) { console.warn('Could not save', e); }
+        }
+
+        /** A schedule item is a repeating weekly class if repeat !== 'once'. */
+        function isWeekly(item) { return (item.repeat || 'weekly') !== 'once'; }
+
+        /* =========================================================
+        NAVIGATION
+        ========================================================= */
+        const TITLES = {
+            dashboard: 'Dashboard', assignments: 'Assignments', schedule: 'Schedule',
+            reviewers: 'Reviewers', timer: 'Study Timer', cards: 'Flashcards'
+        };
+
+        function navigate(view) {
+            $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+            $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+            $('#viewTitle').textContent = TITLES[view] || 'Dashboard';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (view === 'dashboard') renderDashboard();
+            if (view === 'assignments') renderAssignments();
+            if (view === 'schedule') renderSchedule();
+            if (view === 'reviewers') renderNotes();
+            if (view === 'timer') renderSessions();
+            if (view === 'cards') renderDecks();
+        }
+
+        $$('.nav-item').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.view)));
+        document.addEventListener('click', e => {
+            const g = e.target.closest('[data-goto]');
+            if (g) navigate(g.dataset.goto);
+        });
+
+        /* =========================================================
+        DASHBOARD
+        ========================================================= */
+        function renderDashboard() {
+            const now = new Date();
+            $('#todayLabel').textContent = now.toLocaleDateString(undefined, {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+            });
+
+            const pending = state.assignments.filter(a => !a.done);
+            const dueWeek = pending.filter(a => { const d = dayDiff(a.due); return d !== null && d <= 7; });
+            const overdue = pending.filter(a => { const d = dayDiff(a.due); return d !== null && d < 0; });
+            $('#statDue').textContent = dueWeek.length;
+            $('#statDueSub').textContent = overdue.length
+                ? `${overdue.length} overdue!`
+                : (dueWeek.length ? 'keep going, you got this' : 'nothing pending');
+
+            // Today's classes: weekly items matching today's weekday, plus one-time events dated today
+            const today = todayKey();
+            const isoToday = todayISO();
+            const todays = state.schedule.filter(s => {
+                if (isWeekly(s)) return s.day === today;
+                return s.date === isoToday;
+            }).sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+
+            $('#statClasses').textContent = todays.length;
+            $('#statClassesSub').textContent = todays.length
+                ? `first at ${todays[0].start || '—'}`
+                : 'free day 🎉';
+
+            const mastered = state.cards.filter(c => (c.box || 0) >= 4).length;
+            $('#statCards').textContent = state.cards.length;
+            $('#statCardsSub').textContent = `${mastered} mastered`;
+
+            const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+            const focusMin = state.sessions
+                .filter(s => s.mode === 'focus' && s.at >= todayStart.getTime())
+                .reduce((sum, s) => sum + s.minutes, 0);
+            $('#statFocus').textContent = focusMin >= 60 ? (focusMin / 60).toFixed(1) + 'h' : focusMin + 'm';
+            $('#statFocusSub').textContent = focusMin ? 'nice work today' : 'no sessions yet';
+
+            const ds = $('#dashSchedule');
+            ds.innerHTML = todays.length ? todays.map(s => {
+                const badge = isWeekly(s)
+                    ? ''
+                    : '<span class="pill warn" style="margin-left:6px">Once</span>';
+                return `<div class="list-row">
+    <span class="dot" style="background:${esc(s.color || '#5b5bd6')}"></span>
+    <div class="lr-main">
+        <div class="lr-title">${esc(s.title)}${badge}</div>
+        <div class="lr-sub">${esc(s.start || '')}${s.end ? '–' + esc(s.end) : ''}${s.room ? ' · ' + esc(s.room) : ''}</div>
+    </div>
+    </div>`;
+            }).join('')
+                : '<div class="empty">No classes scheduled today. Enjoy the break ☕</div>';
+
+            const up = pending
+                .filter(a => a.due)
+                .sort((a, b) => a.due.localeCompare(b.due))
+                .slice(0, 6);
+            const da = $('#dashAssignments');
+            da.innerHTML = up.length ? up.map(a => {
+                const lbl = dueLabel(a.due);
+                return `<div class="list-row">
+    <div class="lr-main">
+        <div class="lr-title">${esc(a.title)}</div>
+        <div class="lr-sub">${esc(a.subject || 'General')}</div>
+    </div>
+    <span class="pill ${lbl.cls}">${lbl.text}</span>
+    </div>`;
+            }).join('') : '<div class="empty">All caught up! ✨</div>';
+        }
+
+        /* =========================================================
+        ASSIGNMENTS
+        ========================================================= */
+        let assignFilter = 'pending';
+
+        function renderAssignments() {
+            let list = [...state.assignments];
+            if (assignFilter === 'pending') list = list.filter(a => !a.done);
+            if (assignFilter === 'done') list = list.filter(a => a.done);
+
+            list.sort((a, b) => {
+                if (a.done !== b.done) return a.done ? 1 : -1;
+                return (a.due || '9999-99-99').localeCompare(b.due || '9999-99-99');
+            });
+
+            const wrap = $('#assignList');
+            if (!list.length) {
+                wrap.innerHTML = `<div class="empty">${assignFilter === 'done' ? 'Nothing completed yet.' : 'No assignments here. Add one above! 🎯'}</div>`;
+                return;
+            }
+
+            const prioPill = p => p === 'high' ? '<span class="pill danger">High</span>'
+                : p === 'low' ? '<span class="pill">Low</span>'
+                    : '<span class="pill warn">Medium</span>';
+
+            wrap.innerHTML = list.map(a => {
+                const lbl = dueLabel(a.due);
+                return `<div class="list-row">
+    <div class="check ${a.done ? 'on' : ''}" data-toggle="${a.id}"></div>
+    <div class="lr-main">
+        <div class="lr-title ${a.done ? 'done-text' : ''}">${esc(a.title)}</div>
+        <div class="lr-sub">${esc(a.subject || 'General')}${a.due ? ' · ' + esc(a.due) : ''}</div>
+    </div>
+    ${a.done ? '<span class="pill ok">Done</span>' : `<span class="pill ${lbl.cls}">${lbl.text}</span>`}
+    ${a.done ? '' : prioPill(a.priority)}
+    <button class="icon-btn" data-del-assign="${a.id}" title="Delete">✕</button>
+    </div>`;
+            }).join('');
+        }
+
+        $('#btnAddAssignment').addEventListener('click', () => {
+            const title = $('#aTitle').value.trim();
+            if (!title) { toast('Please enter a title'); return; }
+            state.assignments.push({
+                id: uid(),
+                title,
+                subject: $('#aSubject').value.trim(),
+                due: $('#aDue').value,
+                priority: $('#aPriority').value,
+                done: false
+            });
+            $('#aTitle').value = ''; $('#aSubject').value = ''; $('#aDue').value = '';
+            save(); renderAssignments(); renderDashboard();
+            toast('Assignment added ✓');
+        });
+
+        $('#assignFilters').addEventListener('click', e => {
+            const b = e.target.closest('button'); if (!b) return;
+            assignFilter = b.dataset.f;
+            $$('#assignFilters button').forEach(x => x.classList.toggle('active', x === b));
+            renderAssignments();
+        });
+
+        document.addEventListener('click', e => {
+            const t = e.target.closest('[data-toggle]');
+            if (t) {
+                const a = state.assignments.find(x => x.id === t.dataset.toggle);
+                if (a) { a.done = !a.done; save(); renderAssignments(); renderDashboard(); }
+            }
+            const d = e.target.closest('[data-del-assign]');
+            if (d) {
+                state.assignments = state.assignments.filter(x => x.id !== d.dataset.delAssign);
+                save(); renderAssignments(); renderDashboard();
+                toast('Assignment removed');
+            }
+        });
+
+        /* =========================================================
+        SCHEDULE
+        ========================================================= */
+        let scheduleRepeat = 'weekly';   // form state
+
+        /** Switch the form between "Every week" and "One-time" modes. */
+        function setRepeatMode(mode) {
+            scheduleRepeat = mode;
+            $('#sRepeat').value = mode;
+            $$('#repeatToggle button').forEach(b => b.classList.toggle('active', b.dataset.repeat === mode));
+
+            const isOnce = mode === 'once';
+            $('#sDayWrap').style.display = isOnce ? 'none' : '';
+            $('#sDateWrap').style.display = isOnce ? '' : 'none';
+
+            if (isOnce) {
+                if (!$('#sDate').value) $('#sDate').value = todayISO();
+                $('#repeatHint').textContent = 'One-time events appear once, on a specific date. They won\'t repeat next week.';
+            } else {
+                $('#repeatHint').textContent = 'Weekly classes appear in your timetable every week. One-time events appear once, on a specific date.';
+            }
+        }
+
+        $('#repeatToggle').addEventListener('click', e => {
+            const b = e.target.closest('button'); if (!b) return;
+            setRepeatMode(b.dataset.repeat);
+        });
+
+        function renderSchedule() {
+            // ---------- weekly grid ----------
+            const grid = $('#schedGrid');
+            const weekly = state.schedule.filter(isWeekly);
+
+            grid.innerHTML = DAY_ORDER.map(day => {
+                const items = weekly
+                    .filter(s => s.day === day)
+                    .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+                const body = items.length ? items.map(s => `
+    <div class="class-block" style="--c:${esc(s.color || '#5b5bd6')}">
+        <button class="icon-btn" data-del-class="${s.id}" title="Remove">✕</button>
+        <div class="cb-time">${esc(s.start || '')}${s.end ? '–' + esc(s.end) : ''}</div>
+        <div class="cb-title">${esc(s.title)}</div>
+        ${s.room ? `<div class="cb-room">${esc(s.room)}</div>` : ''}
+    </div>`).join('') : '<div class="empty-mini">—</div>';
+                return `<div class="day-col">
+    <div class="day-head">${day}</div>
+    ${body}
+    </div>`;
+            }).join('');
+
+            $('#schedCount').textContent = weekly.length
+                ? `${weekly.length} weekly class${weekly.length === 1 ? '' : 'es'}`
+                : 'no weekly classes yet';
+
+            // ---------- one-time events ----------
+            renderOneTimeEvents();
+        }
+
+        function renderOneTimeEvents() {
+            const wrap = $('#oneTimeList');
+            const onceItems = state.schedule.filter(s => s.repeat === 'once' && s.date);
+
+            // Show today + future only, sorted by date then start time
+            const upcoming = onceItems
+                .filter(s => (dayDiff(s.date) ?? -1) >= 0)
+                .sort((a, b) => {
+                    const c = a.date.localeCompare(b.date);
+                    return c !== 0 ? c : (a.start || '').localeCompare(b.start || '');
+                });
+
+            const pastCount = onceItems.length - upcoming.length;
+            $('#oneTimeCount').textContent = upcoming.length
+                ? `${upcoming.length} upcoming${pastCount ? ` · ${pastCount} past` : ''}`
+                : (pastCount ? `${pastCount} past` : '');
+
+            if (!upcoming.length) {
+                wrap.innerHTML = '<div class="empty">No upcoming one-time events. Add one above and choose "One-time" as the repeat option. 🗓️</div>';
+                return;
+            }
+
+            wrap.innerHTML = upcoming.map(s => {
+                const d = new Date(s.date + 'T00:00:00');
+                const dayLabel = d.toLocaleDateString(undefined, {
+                    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+                });
+                const diff = dayDiff(s.date);
+                let badge = '';
+                if (diff === 0) badge = '<span class="pill warn">Today</span>';
+                else if (diff === 1) badge = '<span class="pill warn">Tomorrow</span>';
+                else if (diff !== null && diff <= 7) badge = `<span class="pill brand">In ${diff}d</span>`;
+                else if (diff !== null) badge = `<span class="pill">In ${diff}d</span>`;
+
+                return `<div class="list-row">
+    <span class="dot" style="background:${esc(s.color || '#5b5bd6')}"></span>
+    <div class="lr-main">
+        <div class="lr-title">${esc(s.title)}</div>
+        <div class="lr-sub">${esc(dayLabel)} · ${esc(s.start || '')}${s.end ? '–' + esc(s.end) : ''}${s.room ? ' · ' + esc(s.room) : ''}</div>
+    </div>
+    ${badge}
+    <button class="icon-btn" data-del-class="${s.id}" title="Remove">✕</button>
+    </div>`;
+            }).join('');
+        }
+
+        $('#btnAddClass').addEventListener('click', () => {
+            const title = $('#sTitle').value.trim();
+            if (!title) { toast('Please enter a class name'); return; }
+
+            const base = {
+                id: uid(),
+                title,
+                start: $('#sStart').value,
+                end: $('#sEnd').value,
+                room: $('#sRoom').value.trim(),
+                color: $('#sColor').value,
+                repeat: scheduleRepeat
+            };
+
+            if (scheduleRepeat === 'weekly') {
+                base.day = $('#sDay').value;
+            } else {
+                const date = $('#sDate').value;
+                if (!date) { toast('Please pick a date'); return; }
+                base.date = date;
+            }
+
+            state.schedule.push(base);
+            $('#sTitle').value = ''; $('#sRoom').value = '';
+            save(); renderSchedule(); renderDashboard();
+            toast(scheduleRepeat === 'weekly' ? 'Weekly class added ✓' : 'One-time event added ✓');
+        });
+
+        document.addEventListener('click', e => {
+            const d = e.target.closest('[data-del-class]');
+            if (d) {
+                state.schedule = state.schedule.filter(x => x.id !== d.dataset.delClass);
+                save(); renderSchedule(); renderDashboard();
+                toast('Removed from schedule');
+            }
+        });
+
+        /* =========================================================
+        REVIEWERS
+        ========================================================= */
+        let activeNoteId = null;
+
+        function renderNotes() {
+            const list = $('#noteList');
+            if (!state.notes.length) {
+                list.innerHTML = '<div class="empty" style="padding:18px 8px">No reviewers yet</div>';
+            } else {
+                list.innerHTML = state.notes
+                    .slice()
+                    .sort((a, b) => (b.updated || 0) - (a.updated || 0))
+                    .map(n => `
+        <div class="note-item ${n.id === activeNoteId ? 'active' : ''}" data-note="${n.id}">
+        <div class="nt">${esc(n.title || 'Untitled')}</div>
+        <div class="ns">${(n.content || '').trim().split(/\s+/).filter(Boolean).length} words</div>
+        </div>`).join('');
+            }
+            showNoteEditor(!!activeNoteId);
+        }
+
+        function showNoteEditor(show) {
+            $('#noteEditorWrap').style.display = show ? '' : 'none';
+            $('#noteEmpty').style.display = show ? 'none' : '';
+        }
+
+        function loadNote(id) {
+            const n = state.notes.find(x => x.id === id);
+            if (!n) return;
+            activeNoteId = id;
+            $('#noteTitle').value = n.title || '';
+            $('#noteContent').value = n.content || '';
+            $('#noteMeta').textContent = n.updated ? 'Last saved ' + new Date(n.updated).toLocaleString() : '';
+            renderNotes();
+        }
+
+        $('#noteList').addEventListener('click', e => {
+            const item = e.target.closest('[data-note]');
+            if (item) loadNote(item.dataset.note);
+        });
+
+        $('#btnNewNote').addEventListener('click', () => {
+            const n = { id: uid(), title: 'Untitled reviewer', content: '', updated: Date.now() };
+            state.notes.unshift(n);
+            save(); loadNote(n.id);
+            $('#noteTitle').focus(); $('#noteTitle').select();
+        });
+
+        $('#btnSaveNote').addEventListener('click', () => {
+            const n = state.notes.find(x => x.id === activeNoteId);
+            if (!n) { toast('No reviewer selected'); return; }
+            n.title = $('#noteTitle').value.trim() || 'Untitled';
+            n.content = $('#noteContent').value;
+            n.updated = Date.now();
+            save(); renderNotes();
+            toast('Reviewer saved ✓');
+        });
+
+        $('#btnDeleteNote').addEventListener('click', () => {
+            if (!activeNoteId) return;
+            state.notes = state.notes.filter(x => x.id !== activeNoteId);
+            activeNoteId = null;
+            save(); renderNotes();
+            toast('Reviewer deleted');
+        });
+
+        $('#btnNoteToCards').addEventListener('click', () => {
+            const text = $('#noteContent').value.trim();
+            if (!text) { toast('This reviewer is empty'); return; }
+            const count = parseInt($('#cardCount').value, 10) || 20;
+            const deck = ($('#noteTitle').value.trim() || 'Reviewer');
+            const created = generateAndStore(text, count, deck);
+            navigate('cards');
+            setStatus(created
+                ? `✅ Generated ${created} flashcard${created === 1 ? '' : 's'} from "${deck}".`
+                : '⚠️ Could not find enough content to build flashcards from this reviewer.',
+                created ? 'ok' : 'err');
+        });
+
+        /* =========================================================
+        STUDY TIMER
+        ========================================================= */
+        const RING_CIRC = 2 * Math.PI * 104;
+        let timer = {
+            mode: 'focus',
+            running: false,
+            remaining: state.settings.focus * 60,
+            endAt: null,
+            tick: null
+        };
+
+        function modeMinutes(mode) {
+            if (mode === 'focus') return state.settings.focus;
+            if (mode === 'short') return state.settings.short;
+            return state.settings.long;
+        }
+        function modeLabel(mode) {
+            return mode === 'focus' ? 'Focus' : mode === 'short' ? 'Short break' : 'Long break';
+        }
+
+        function paintTimer() {
+            const total = modeMinutes(timer.mode) * 60;
+            const rem = Math.max(0, Math.round(timer.remaining));
+            const m = String(Math.floor(rem / 60)).padStart(2, '0');
+            const s = String(rem % 60).padStart(2, '0');
+            $('#timerDisplay').textContent = `${m}:${s}`;
+            $('#timerModeLabel').textContent = modeLabel(timer.mode);
+
+            const progress = total > 0 ? 1 - (rem / total) : 0;
+            const fg = $('#ringFg');
+            fg.style.strokeDasharray = RING_CIRC;
+            fg.style.strokeDashoffset = RING_CIRC * (1 - progress);
+
+            $('#btnTimerStart').textContent = timer.running ? 'Pause' : (rem < total ? 'Resume' : 'Start');
+            document.title = timer.running
+                ? `${m}:${s} · ${modeLabel(timer.mode)} — StudyDesk`
+                : 'StudyDesk — Student Toolkit';
+        }
+
+        function startTimer() {
+            if (timer.running) return;
+            timer.running = true;
+            timer.endAt = Date.now() + timer.remaining * 1000;
+            timer.tick = setInterval(() => {
+                timer.remaining = (timer.endAt - Date.now()) / 1000;
+                if (timer.remaining <= 0) {
+                    timer.remaining = 0;
+                    paintTimer();
+                    completeTimer();
+                    return;
+                }
+                paintTimer();
+            }, 250);
+            paintTimer();
+        }
+
+        function pauseTimer() {
+            if (!timer.running) return;
+            timer.running = false;
+            clearInterval(timer.tick);
+            timer.tick = null;
+            timer.remaining = Math.max(0, (timer.endAt - Date.now()) / 1000);
+            paintTimer();
+        }
+
+        function resetTimer() {
+            timer.running = false;
+            clearInterval(timer.tick); timer.tick = null;
+            timer.remaining = modeMinutes(timer.mode) * 60;
+            paintTimer();
+        }
+
+        function setMode(mode) {
+            timer.mode = mode;
+            $$('#timerModes button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+            resetTimer();
+        }
+
+        function completeTimer() {
+            timer.running = false;
+            clearInterval(timer.tick); timer.tick = null;
+            beep();
+
+            const mins = modeMinutes(timer.mode);
+            state.sessions.push({ id: uid(), mode: timer.mode, minutes: mins, at: Date.now() });
+            save();
+
+            if (timer.mode === 'focus') {
+                const focusCount = state.sessions.filter(s => s.mode === 'focus').length;
+                setMode(focusCount % 4 === 0 ? 'long' : 'short');
+                toast(`Focus session complete! Time for a ${modeLabel(timer.mode).toLowerCase()} ☕`);
+            } else {
+                setMode('focus');
+                toast('Break over — let\'s get back to it 💪');
+            }
+            renderSessions();
+            renderDashboard();
+        }
+
+        $('#btnTimerStart').addEventListener('click', () => timer.running ? pauseTimer() : startTimer());
+        $('#btnTimerReset').addEventListener('click', resetTimer);
+        $('#btnTimerSkip').addEventListener('click', () => {
+            if (timer.running) pauseTimer();
+            completeTimer();
+        });
+
+        $('#timerModes').addEventListener('click', e => {
+            const b = e.target.closest('button'); if (!b) return;
+            if (timer.running) pauseTimer();
+            setMode(b.dataset.mode);
+        });
+
+        ['focus', 'short', 'long'].forEach(k => {
+            const el = $('#set' + k.charAt(0).toUpperCase() + k.slice(1));
+            el.value = state.settings[k];
+            el.addEventListener('change', () => {
+                const v = Math.max(1, parseInt(el.value, 10) || 1);
+                state.settings[k] = v; el.value = v;
+                save();
+                if (timer.mode === k && !timer.running) resetTimer();
+            });
+        });
+
+        function renderSessions() {
+            const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+            const todays = state.sessions.filter(s => s.at >= todayStart.getTime()).sort((a, b) => b.at - a.at);
+            const total = todays.filter(s => s.mode === 'focus').reduce((a, s) => a + s.minutes, 0);
+            $('#sessionTotal').textContent = total + ' min';
+
+            $('#sessionList').innerHTML = todays.length ? todays.map(s => `
+    <div class="session-row">
+    <span>${s.mode === 'focus' ? '🎯 Focus' : '☕ ' + modeLabel(s.mode)}</span>
+    <span class="muted">${s.minutes} min · ${new Date(s.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+    </div>`).join('')
+                : '<div class="empty" style="padding:16px 8px">No sessions yet today.</div>';
+        }
+
+        /* =========================================================
+        OCR ENGINE (lazy-loaded, only when needed)
+        ========================================================= */
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        let tesseractPromise = null;
+        function loadTesseract() {
+            if (window.Tesseract) return Promise.resolve(window.Tesseract);
+            if (tesseractPromise) return tesseractPromise;
+            tesseractPromise = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js';
+                s.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error('OCR engine failed to initialise'));
+                s.onerror = () => reject(new Error('Could not load OCR engine (offline?)'));
+                document.head.appendChild(s);
+            });
+            return tesseractPromise;
+        }
+
+        async function ocrCanvas(canvas, onProgress) {
+            const T = await loadTesseract();
+            const result = await T.recognize(canvas, 'eng', {
+                logger: m => {
+                    if (m.status === 'recognizing text' && onProgress) {
+                        onProgress(Math.round((m.progress || 0) * 100));
+                    }
+                }
+            });
+            return (result && result.data && result.data.text) || '';
+        }
+
+        async function renderPageToCanvas(page, scale) {
+            const MAX_DIM = 2400;
+            let viewport = page.getViewport({ scale });
+            const maxSide = Math.max(viewport.width, viewport.height);
+            if (maxSide > MAX_DIM) {
+                viewport = page.getViewport({ scale: scale * (MAX_DIM / maxSide) });
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.floor(viewport.width));
+            canvas.height = Math.max(1, Math.floor(viewport.height));
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            return canvas;
+        }
+
+        /* =========================================================
+        FILE TEXT EXTRACTION
+        ========================================================= */
+        function decodeEntities(str) {
+            return String(str)
+                .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+                .replace(/&apos;/g, "'").replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+                .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n));
+        }
+
+        async function extractPdf(file, onStatus) {
+            if (!window.pdfjsLib) throw new Error('PDF reader could not load. Check your internet connection.');
+
+            const buf = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            const pageTexts = new Array(pdf.numPages).fill('');
+            const needOcr = [];
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                onStatus?.(`Reading page ${i} of ${pdf.numPages}…`);
+                const page = await pdf.getPage(i);
+                let content;
+                try {
+                    content = await page.getTextContent();
+                } catch (e) {
+                    content = { items: [] };
+                }
+                const lines = new Map();
+                content.items.forEach(it => {
+                    if (!it || typeof it.str !== 'string') return;
+                    const y = Math.round(it.transform ? it.transform[5] : 0);
+                    if (!lines.has(y)) lines.set(y, []);
+                    lines.get(y).push(it.str);
+                });
+                const sorted = [...lines.entries()].sort((a, b) => b[0] - a[0]);
+                const text = sorted
+                    .map(([, parts]) => parts.join(' ').replace(/\s+/g, ' ').trim())
+                    .filter(Boolean)
+                    .join('\n');
+                pageTexts[i - 1] = text;
+
+                if (text.replace(/\s/g, '').length < 40) needOcr.push(i);
+            }
+
+            if (needOcr.length) {
+                if (!navigator.onLine) {
+                    onStatus?.('⚠️ This looks like a scanned PDF, and OCR needs a connection the first time.');
+                } else {
+                    onStatus?.(`🔍 Scanned pages detected (${needOcr.length}). Loading OCR engine…`);
+                    try {
+                        await loadTesseract();
+                        for (const pn of needOcr) {
+                            onStatus?.(`🔍 OCR on page ${pn} of ${pdf.numPages}…`);
+                            try {
+                                const page = await pdf.getPage(pn);
+                                const canvas = await renderPageToCanvas(page, 2);
+                                const ocrText = await ocrCanvas(canvas, pct => {
+                                    onStatus?.(`🔍 OCR page ${pn}: ${pct}%`);
+                                });
+                                if (ocrText && ocrText.trim()) {
+                                    pageTexts[pn - 1] = (pageTexts[pn - 1] ? pageTexts[pn - 1] + '\n' : '') + ocrText;
+                                }
+                            } catch (pageErr) {
+                                console.warn('OCR failed on page', pn, pageErr);
+                            }
+                        }
+                    } catch (engineErr) {
+                        console.warn('OCR engine unavailable', engineErr);
+                        onStatus?.('⚠️ OCR engine could not load — text-based pages were still read.');
+                    }
+                }
+            }
+
+            return pageTexts.join('\n\n');
+        }
+
+        async function extractDocx(file) {
+            if (!window.mammoth) throw new Error('Word reader could not load. Check your internet connection.');
+            const buf = await file.arrayBuffer();
+            const res = await mammoth.extractRawText({ arrayBuffer: buf });
+            return res.value;
+        }
+
+        async function extractPptx(file) {
+            if (!window.JSZip) throw new Error('Archive reader could not load. Check your internet connection.');
+            const zip = await JSZip.loadAsync(await file.arrayBuffer());
+            const slides = Object.keys(zip.files)
+                .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+                .sort((a, b) => (+a.match(/\d+/)[0]) - (+b.match(/\d+/)[0]));
+            let out = '';
+            for (const name of slides) {
+                const xml = await zip.files[name].async('string');
+                const texts = [...xml.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)].map(m => decodeEntities(m[1]));
+                out += texts.join('\n') + '\n\n';
+            }
+            return out;
+        }
+
+        async function extractXlsx(file) {
+            if (!window.JSZip) throw new Error('Archive reader could not load. Check your internet connection.');
+            const zip = await JSZip.loadAsync(await file.arrayBuffer());
+            const ss = zip.file('xl/sharedStrings.xml');
+            if (!ss) throw new Error('No readable text found in this spreadsheet.');
+            const xml = await ss.async('string');
+            const items = [...xml.matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m =>
+                [...m[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(x => decodeEntities(x[1])).join('')
+            );
+            return items.join('\n');
+        }
+
+        function loadImageFile(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read that image file.')); };
+                img.src = url;
+            });
+        }
+
+        async function extractImage(file, onStatus) {
+            onStatus?.('Preparing image for OCR…');
+            const img = await loadImageFile(file);
+            const MAX = 2400;
+            const scale = Math.min(1, MAX / Math.max(img.width || 1, img.height || 1));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round((img.width || 1) * scale));
+            canvas.height = Math.max(1, Math.round((img.height || 1) * scale));
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            onStatus?.('🔍 Loading OCR engine…');
+            return await ocrCanvas(canvas, pct => onStatus?.(`🔍 OCR: ${pct}%`));
+        }
+
+        const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif', 'tif', 'tiff'];
+
+        async function extractText(file, onStatus) {
+            const name = (file.name || '').toLowerCase();
+            const ext = name.includes('.') ? name.split('.').pop() : '';
+
+            if (IMAGE_EXTS.includes(ext)) return await extractImage(file, onStatus);
+            if (['txt', 'md', 'markdown', 'csv', 'json', 'log', 'tex'].includes(ext)) return await file.text();
+            if (['html', 'htm', 'xml'].includes(ext)) {
+                const raw = await file.text();
+                return decodeEntities(
+                    raw.replace(/<script[\s\S]*?<\/script>/gi, ' ')
+                        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+                        .replace(/<[^>]+>/g, ' ')
+                );
+            }
+            if (ext === 'rtf') {
+                const raw = await file.text();
+                return raw.replace(/\\[a-z]+-?\d* ?/gi, ' ').replace(/[{}]/g, ' ');
+            }
+            if (ext === 'pdf') return await extractPdf(file, onStatus);
+            if (ext === 'docx') return await extractDocx(file);
+            if (ext === 'pptx') return await extractPptx(file);
+            if (ext === 'xlsx') return await extractXlsx(file);
+
+            try { return await file.text(); }
+            catch (e) { throw new Error('Unsupported file type: .' + ext); }
+        }
+
+        /* =========================================================
+        FLASHCARD GENERATOR
+        ========================================================= */
+        function cleanText(s) {
+            return String(s)
+                .replace(/\*\*(.+?)\*\*/g, '$1')
+                .replace(/__(.+?)__/g, '$1')
+                .replace(/\*(.+?)\*/g, '$1')
+                .replace(/`/g, '')
+                .replace(/\s+/g, ' ')
+                .replace(/^[\s\-•*–—>]+/, '')
+                .trim();
+        }
+
+        function trimLen(s, n) {
+            s = cleanText(s);
+            if (s.length <= n) return s;
+            const cut = s.slice(0, n);
+            const lastSpace = cut.lastIndexOf(' ');
+            return (lastSpace > n * 0.6 ? cut.slice(0, lastSpace) : cut).trim() + '…';
+        }
+
+        function generateFlashcards(rawText, desired) {
+            const text = String(rawText || '').replace(/\r/g, '');
+            const lines = text.split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim());
+
+            const seen = new Set();
+            const buckets = { qa: [], term: [], def: [], cloze: [], list: [] };
+            const usedSentences = new Set();
+
+            const add = (bucket, front, back) => {
+                front = cleanText(front);
+                back = cleanText(back);
+                if (front.length < 4 || back.length < 3) return;
+                if (front.length > 400 || back.length > 600) return;
+                const key = front.toLowerCase().replace(/[^a-z0-9]+/g, '');
+                if (key.length < 5 || seen.has(key)) return;
+                seen.add(key);
+                buckets[bucket].push({ front, back });
+            };
+
+            for (let i = 0; i < lines.length; i++) {
+                const q = lines[i].match(/^(?:Q\d*|Question|Ques)\s*[:.\-)]\s*(.+)$/i);
+                if (!q) continue;
+                for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+                    const a = lines[j].match(/^(?:A\d*|Ans|Answer)\s*[:.\-)]\s*(.+)$/i);
+                    if (a) { add('qa', q[1], a[1]); i = j; break; }
+                    if (!lines[j]) continue;
+                }
+            }
+
+            for (const line of lines) {
+                if (!line || line.length < 12) continue;
+                if (/^(q\d*|question|a\d*|ans|answer)\s*[:.\-)]/i.test(line)) continue;
+
+                let m = line.match(/^([^:]{2,70}?)\s*:\s+(.{10,})$/);
+                if (!m) m = line.match(/^(.{2,70}?)\s+[–—]\s+(.{10,})$/);
+                if (!m) m = line.match(/^(.{2,70}?)\s+-\s+(.{10,})$/);
+
+                if (m) {
+                    const term = cleanText(m[1]);
+                    const def = cleanText(m[2]);
+                    if (term.split(' ').length > 9) continue;
+                    if (/^(https?|www|chapter|page|figure|table|note|source|ref)$/i.test(term)) continue;
+                    if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(term)) continue;
+                    add('term', `What is ${term}?`, def);
+                }
+            }
+
+            const flat = text.replace(/\n{2,}/g, '\n').replace(/[ \t]+/g, ' ');
+            const rawSentences = flat
+                .split(/(?<=[.!?])\s+(?=[A-Z0-9"'(])|\n/)
+                .map(s => cleanText(s))
+                .filter(s => s.length >= 35 && s.length <= 420 && /[a-zA-Z]/.test(s));
+
+            const defRe = /^(.{4,90}?)\s+(is|are|was|were|refers to|means|describes|represents|is defined as|is known as|is called|consists of|involves)\s+(.{12,})$/i;
+
+            for (const s of rawSentences) {
+                const m = s.match(defRe);
+                if (!m) continue;
+                const subject = cleanText(m[1]);
+                const verb = m[2].toLowerCase();
+                if (subject.split(' ').length > 11) continue;
+                if (/^(it|this|that|these|those|there|he|she|they|we|i|you)$/i.test(subject)) continue;
+                if (subject.length < 4) continue;
+                const q = (verb === 'are' || verb === 'were' || verb === 'consist of' || verb === 'involves')
+                    ? `What ${verb} ${subject}?`
+                    : `What is ${subject}?`;
+                add('def', q, s);
+                usedSentences.add(s);
+            }
+
+            for (const s of rawSentences) {
+                if (usedSentences.has(s)) continue;
+                if (s.length < 45) continue;
+                const words = s.split(' ');
+                if (words.length < 7) continue;
+
+                let bestIdx = -1, bestLen = 0;
+                words.forEach((w, i) => {
+                    const core = w.replace(/[^A-Za-z-]/g, '');
+                    if (core.length > bestLen && core.length >= 6 && core.length < 20 && i > 0) {
+                        bestLen = core.length; bestIdx = i;
+                    }
+                });
+                if (bestIdx < 0) continue;
+
+                const answer = words[bestIdx].replace(/[^A-Za-z-]/g, '');
+                const blanked = words.map((w, i) => i === bestIdx ? '______' : w).join(' ');
+                add('cloze', blanked, answer);
+                usedSentences.add(s);
+            }
+
+            for (let i = 0; i < lines.length; i++) {
+                const head = lines[i];
+                if (!head || head.length < 4 || head.length > 70) continue;
+                if (/[.!?:;,]$/.test(head)) continue;
+                if (!/^[A-Z0-9]/.test(head)) continue;
+                if (/^[\-•*\d]/.test(head)) continue;
+
+                const bullets = [];
+                for (let j = i + 1; j < Math.min(i + 9, lines.length); j++) {
+                    if (!lines[j]) { if (bullets.length) break; else continue; }
+                    if (/^[\-•*–]|^\d+[.)]/.test(lines[j])) {
+                        bullets.push(cleanText(lines[j]));
+                    } else break;
+                }
+                if (bullets.length >= 2 && bullets.length <= 7) {
+                    add('list', `What falls under "${cleanText(head)}"?`, bullets.join(' · '));
+                }
+            }
+
+            const order = ['qa', 'term', 'def', 'cloze', 'list'];
+            const out = [];
+            let guard = 0;
+            while (out.length < desired && guard < 5000) {
+                let progressed = false;
+                for (const k of order) {
+                    if (out.length >= desired) break;
+                    if (buckets[k].length) { out.push(buckets[k].shift()); progressed = true; }
+                }
+                if (!progressed) break;
+                guard++;
+            }
+
+            return out.slice(0, desired);
+        }
+
+        /* =========================================================
+        FLASHCARD UI
+        ========================================================= */
+        function setStatus(msg, type) {
+            const el = $('#genStatus');
+            el.textContent = msg;
+            el.className = 'status show ' + (type || 'info');
+        }
+
+        function generateAndStore(text, count, deck) {
+            const generated = generateFlashcards(text, count);
+            if (!generated.length) return 0;
+
+            const deckName = (deck || '').trim() || 'Quick deck';
+            generated.forEach(g => {
+                state.cards.push({
+                    id: uid(), deck: deckName,
+                    front: g.front, back: g.back,
+                    box: 0, created: Date.now()
+                });
+            });
+            save();
+            renderDecks();
+            renderDashboard();
+            return generated.length;
+        }
+
+        let fileBusy = false;
+
+        async function handleFile(file) {
+            if (!file) return;
+            if (fileBusy) { toast('Please wait — still processing the previous file'); return; }
+            fileBusy = true;
+
+            const count = Math.max(1, Math.min(300, parseInt($('#cardCount').value, 10) || 20));
+            const deckInput = $('#deckName').value.trim();
+            const deck = deckInput || file.name.replace(/\.[^.]+$/, '');
+
+            setStatus(`📖 Reading "${file.name}"…`, 'info');
+
+            try {
+                const text = await extractText(file, msg => setStatus('📖 ' + msg, 'info'));
+
+                if (!text || text.replace(/\s/g, '').length < 40) {
+                    setStatus('⚠️ Not enough readable text found. If this is a scanned document, try a clearer scan or a higher-resolution image.', 'err');
+                    return;
+                }
+
+                const created = generateAndStore(text, count, deck);
+                if (created) {
+                    setStatus(`✅ Generated ${created} flashcard${created === 1 ? '' : 's'} from "${file.name}" → deck "${deck}".`, 'ok');
+                    $('#deckSelect').value = deck;
+                    renderDecks();
+                    toast(`${created} flashcards created 🧠`);
+                } else {
+                    setStatus('⚠️ The file was read, but there was not enough structured content to build flashcards. Try a text-heavy document.', 'err');
+                }
+            } catch (err) {
+                console.error(err);
+                setStatus('❌ ' + (err.message || 'Could not read that file.'), 'err');
+            } finally {
+                fileBusy = false;
+            }
+        }
+
+        const dz = $('#dropzone');
+        dz.addEventListener('click', () => $('#fileInput').click());
+        $('#fileInput').addEventListener('change', e => {
+            const f = e.target.files[0];
+            handleFile(f);
+            e.target.value = '';
+        });
+        ['dragenter', 'dragover'].forEach(ev =>
+            dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+        ['dragleave', 'drop'].forEach(ev =>
+            dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+        dz.addEventListener('drop', e => {
+            const f = e.dataTransfer.files[0];
+            if (f) handleFile(f);
+        });
+
+        $('#btnGenerateText').addEventListener('click', () => {
+            const text = $('#pasteArea').value.trim();
+            if (text.length < 40) { toast('Paste a bit more text first'); return; }
+            const count = Math.max(1, Math.min(300, parseInt($('#cardCount').value, 10) || 20));
+            const deck = $('#deckName').value.trim() || 'Pasted notes';
+            const created = generateAndStore(text, count, deck);
+            if (created) {
+                setStatus(`✅ Generated ${created} flashcard${created === 1 ? '' : 's'} → deck "${deck}".`, 'ok');
+                $('#deckSelect').value = deck;
+                renderDecks();
+                toast(`${created} flashcards created 🧠`);
+            } else {
+                setStatus('⚠️ Not enough structured content found in that text.', 'err');
+            }
+        });
+
+        function renderDecks() {
+            const decks = [...new Set(state.cards.map(c => c.deck))];
+            const sel = $('#deckSelect');
+            const current = sel.value;
+            sel.innerHTML = `<option value="__all__">All cards (${state.cards.length})</option>` +
+                decks.map(d => {
+                    const n = state.cards.filter(c => c.deck === d).length;
+                    return `<option value="${esc(d)}">${esc(d)} (${n})</option>`;
+                }).join('');
+            if ([...sel.options].some(o => o.value === current)) sel.value = current;
+
+            renderCardPreview();
+        }
+
+        function renderCardPreview() {
+            const deck = $('#deckSelect').value || '__all__';
+            const cards = state.cards.filter(c => deck === '__all__' || c.deck === deck);
+            const mastered = cards.filter(c => (c.box || 0) >= 4).length;
+
+            $('#deckStats').textContent = cards.length
+                ? `${cards.length} card${cards.length === 1 ? '' : 's'} · ${mastered} mastered · ${cards.length - mastered} still learning`
+                : '';
+
+            $('#cardPreview').innerHTML = cards.length
+                ? cards.map(c => `
+        <div class="mini-card">
+        <button class="icon-btn" data-del-card="${c.id}" title="Delete">✕</button>
+        <div class="q">${esc(trimLen(c.front, 160))}</div>
+        <div class="a">${esc(trimLen(c.back, 200))}</div>
+        ${(c.box || 0) >= 4 ? '<div style="margin-top:8px"><span class="pill ok">Mastered</span></div>' : ''}
+        </div>`).join('')
+                : '<div class="empty" style="grid-column:1/-1">No flashcards yet. Upload a file above to generate some! 🧠</div>';
+        }
+
+        $('#deckSelect').addEventListener('change', renderCardPreview);
+
+        $('#btnClearDeck').addEventListener('click', () => {
+            const deck = $('#deckSelect').value;
+            if (deck === '__all__') {
+                if (!state.cards.length) return;
+                if (confirm('Delete ALL flashcards?')) { state.cards = []; save(); renderDecks(); renderDashboard(); toast('All cards deleted'); }
+            } else {
+                if (confirm(`Delete all cards in "${deck}"?`)) {
+                    state.cards = state.cards.filter(c => c.deck !== deck);
+                    save(); renderDecks(); renderDashboard(); toast('Deck cleared');
+                }
+            }
+        });
+
+        document.addEventListener('click', e => {
+            const d = e.target.closest('[data-del-card]');
+            if (d) {
+                state.cards = state.cards.filter(c => c.id !== d.dataset.delCard);
+                save(); renderDecks(); renderDashboard();
+            }
+        });
+
+        /* =========================================================
+        STUDY MODE
+        ========================================================= */
+        let studyQueue = [];
+        let studyIndex = 0;
+        let studyFlipped = false;
+        let studyCorrect = 0;
+        let studySessionOrder = [];
+
+        function buildStudyQueue() {
+            const deck = $('#deckSelect').value || '__all__';
+            const cards = state.cards.filter(c => deck === '__all__' || c.deck === deck);
+            return cards.slice().sort((a, b) => (a.box || 0) - (b.box || 0));
+        }
+
+        function startStudy() {
+            const queue = buildStudyQueue();
+            if (!queue.length) {
+                toast('No flashcards to study yet');
+                return;
+            }
+            studySessionOrder = queue.map(c => c.id);
+            studyQueue = queue;
+            openStudySession();
+        }
+
+        function restartStudy() {
+            if (!studySessionOrder.length) {
+                startStudy();
+                return;
+            }
+            const byId = new Map(state.cards.map(c => [c.id, c]));
+            const rebuilt = studySessionOrder.map(id => byId.get(id)).filter(Boolean);
+
+            if (!rebuilt.length) {
+                startStudy();
+                return;
+            }
+            studyQueue = rebuilt;
+            openStudySession();
+        }
+
+        function openStudySession() {
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+
+            studyIndex = 0;
+            studyFlipped = false;
+            studyCorrect = 0;
+
+            $('#studyOverlay').classList.add('show');
+            $('#studyDone').style.display = 'none';
+            $('#flashcard').style.display = '';
+            $('#flashcard').classList.remove('flipped');
+            $('#studyActions').style.display = '';
+            $('#studyActions').classList.remove('show');
+
+            showStudyCard();
+        }
+
+        function showStudyCard() {
+            if (studyIndex >= studyQueue.length) {
+                $('#flashcard').style.display = 'none';
+                $('#studyActions').style.display = 'none';
+                $('#studyActions').classList.remove('show');
+                $('#studyDone').style.display = 'flex';
+                $('#studySummary').textContent =
+                    `You reviewed ${studyQueue.length} card${studyQueue.length === 1 ? '' : 's'} and marked ${studyCorrect} as mastered.`;
+                $('#studyProgress').textContent = `${studyQueue.length} / ${studyQueue.length}`;
+                return;
+            }
+
+            const card = studyQueue[studyIndex];
+            studyFlipped = false;
+            $('#flashcard').classList.remove('flipped');
+            $('#fcFront').textContent = card.front;
+            $('#fcBack').textContent = card.back;
+            $('#studyProgress').textContent = `${studyIndex + 1} / ${studyQueue.length}`;
+            $('#studyActions').classList.remove('show');
+        }
+
+        $('#flashcard').addEventListener('click', () => {
+            studyFlipped = !studyFlipped;
+            $('#flashcard').classList.toggle('flipped', studyFlipped);
+            $('#studyActions').classList.toggle('show', studyFlipped);
+        });
+
+        function answerCard(good) {
+            if (studyIndex >= studyQueue.length) return;
+            const card = studyQueue[studyIndex];
+            if (card) {
+                card.box = good ? Math.min(5, (card.box || 0) + 1) : 0;
+                if (good) studyCorrect++;
+                save();
+            }
+            studyIndex++;
+            showStudyCard();
+        }
+
+        $('#btnAgain').addEventListener('click', e => { e.stopPropagation(); answerCard(false); });
+        $('#btnGood').addEventListener('click', e => { e.stopPropagation(); answerCard(true); });
+
+        $('#studyClose').addEventListener('click', () => {
+            $('#studyOverlay').classList.remove('show');
+            renderDecks(); renderDashboard();
+        });
+
+        $('#btnStudyRestart').addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            restartStudy();
+        });
+
+        $('#btnStudy').addEventListener('click', startStudy);
+
+        document.addEventListener('keydown', e => {
+            if (!$('#studyOverlay').classList.contains('show')) return;
+
+            const focusedInOverlay = document.activeElement &&
+                $('#studyOverlay').contains(document.activeElement);
+
+            if (e.key === ' ' || e.key === 'Enter') {
+                if (focusedInOverlay) return;
+                e.preventDefault();
+                if (!studyFlipped) {
+                    studyFlipped = true;
+                    $('#flashcard').classList.add('flipped');
+                    $('#studyActions').classList.add('show');
+                }
+            }
+            if (e.key === 'ArrowRight' && studyFlipped) { e.preventDefault(); answerCard(true); }
+            if (e.key === 'ArrowLeft' && studyFlipped) { e.preventDefault(); answerCard(false); }
+            if (e.key === 'Escape') { $('#studyOverlay').classList.remove('show'); }
+        });
+
+        /* =========================================================
+        INIT
+        ========================================================= */
+        (function init() {
+            renderDashboard();
+            renderAssignments();
+            renderSchedule();
+            renderNotes();
+            renderSessions();
+            renderDecks();
+            paintTimer();
+            setRepeatMode('weekly');
+
+            const now = new Date();
+            $('#todayLabel').textContent = now.toLocaleDateString(undefined, {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+            });
+
+            setInterval(() => {
+                if ($('#view-dashboard').classList.contains('active')) renderDashboard();
+            }, 60000);
+        })();
+    </script>
+</body>
+
+</html>
